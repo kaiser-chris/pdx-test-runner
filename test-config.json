@@ -1,0 +1,11 @@
+{
+  "game-directory": "E:\\SteamLibrary\\steamapps\\common\\Victoria 3",
+  "mod-directories": [
+    "D:\\Development\\projects\\victoria3\\gate\\mod"
+  ],
+  "ignored-files": [
+    "germany.txt",
+    "ip3.txt",
+    "italy.txt"
+  ]
+}
