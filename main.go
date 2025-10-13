@@ -13,20 +13,16 @@ import (
 )
 
 const (
-	FlagConfig = "config"
+	FlagConfig        = "config"
+	FlagReportIgnored = "report-ignored"
 )
 
 func main() {
 	configFlag := flag.String(FlagConfig, "test-config.json", "Optional: Path to test config")
+	reportIgnored := flag.Bool(FlagReportIgnored, false, "Optional: Enable to list ignored tests")
 	flag.Parse()
 
-	var configPath string
-	if configFlag == nil || *configFlag == "" {
-		configPath = "test-config.json"
-	} else {
-		configPath = *configFlag
-	}
-	configPath, err := filepath.Abs(configPath)
+	configPath, err := filepath.Abs(*configFlag)
 	if err != nil {
 		logging.Fatalf("Provided config file path is invalid: %s", err)
 		os.Exit(1)
@@ -64,7 +60,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	logging.Info(buildFoundTestsReport(testFiles, true))
+	if reportIgnored != nil && *reportIgnored {
+		logging.Info(buildFoundTestsReport(testFiles, true))
+	}
 	logging.Info(buildFoundTestsReport(testFiles, false))
 
 	logging.Info("Reactivating all test files")
@@ -110,25 +108,47 @@ func buildFoundTestsReport(files []*testing.PdxTestFile, ignored bool) string {
 		if testFile.Ignored == !ignored {
 			continue
 		}
-		report += fmt.Sprintf(
-			"\n%sFile:%s %s%s%s",
-			logging.AnsiBoldOn, logging.AnsiAllDefault,
-			color,
-			testFile.Name,
-			logging.AnsiAllDefault,
-		)
-		for _, test := range testFile.Tests {
+		if strings.TrimSpace(testFile.DisplayName) != "" {
 			report += fmt.Sprintf(
-				"\n - %sTest:%s %s%s%s",
+				"\n%sFile:%s %s%s%s (%s)",
 				logging.AnsiBoldOn, logging.AnsiAllDefault,
 				color,
-				test.Name,
+				testFile.DisplayName,
+				logging.AnsiAllDefault,
+				testFile.Name,
+			)
+		} else {
+			report += fmt.Sprintf(
+				"\n%sFile:%s %s%s%s",
+				logging.AnsiBoldOn, logging.AnsiAllDefault,
+				color,
+				testFile.Name,
 				logging.AnsiAllDefault,
 			)
-			if strings.TrimSpace(test.Comment) != "" {
+		}
+		for _, test := range testFile.Tests {
+			if strings.TrimSpace(test.DisplayName) != "" {
+				report += fmt.Sprintf(
+					"\n - %sTest:%s %s%s%s (%s)",
+					logging.AnsiBoldOn, logging.AnsiAllDefault,
+					color,
+					test.DisplayName,
+					logging.AnsiAllDefault,
+					test.Name,
+				)
+			} else {
+				report += fmt.Sprintf(
+					"\n - %sTest:%s %s%s%s",
+					logging.AnsiBoldOn, logging.AnsiAllDefault,
+					color,
+					test.Name,
+					logging.AnsiAllDefault,
+				)
+			}
+			if strings.TrimSpace(test.Description) != "" {
 				report += fmt.Sprintf(" :: %s%s%s",
 					logging.AnsiFgGreen,
-					test.Comment,
+					test.Description,
 					logging.AnsiAllDefault,
 				)
 			}

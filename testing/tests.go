@@ -11,28 +11,35 @@ import (
 
 const activeTestSuffix = ".txt"
 
-var regexLastDate = regexp.MustCompile(`^last_date\s*=\s*(.*)$`)
-var regexTest = regexp.MustCompile(`(?m)(?:^\s*#\s*(?P<comment>.+)\s*)*\s*(?P<test>[a-zA-Z_\-0-9]+)\s*=\s*{\s+(?:acceptable_fail_rate|success|fail)`)
+var regexTestDisplayName = regexp.MustCompile(`^### name\s*=\s*(?P<name>.*)`)
+var regexLastDate = regexp.MustCompile(`last_date\s*=\s*(.*)`)
+var regexTest = regexp.MustCompile(`(?m)(?:^\s*###\s*name\s*=\s*(?P<name>.+)\s*)*\s*(?:^\s*###\s*desc\s*=\s*(?P<desc>.+)\s*)*\s*(?P<test>[a-zA-Z_\-0-9]+)\s*=\s*{\s+(?:acceptable_fail_rate|success|fail)`)
 
-var victoria3IgnoreList = []string{
-	"test.txt",
+// Base game files that should not be parsed
+var baseIgnoreList = map[game.Type][]string{
+	game.Victoria3: {
+		"test.txt",
+	},
+	game.CrusaderKings3: {},
 }
 
 type PdxTestFile struct {
-	Ignored  bool
-	Name     string
-	Path     string
-	LastDate string
-	Tests    []*PdxTest
+	Ignored     bool
+	Name        string
+	DisplayName string
+	Path        string
+	LastDate    string
+	Tests       []*PdxTest
 }
 type PdxTest struct {
-	Name    string
-	Comment string
+	Name        string
+	DisplayName string
+	Description string
 }
 
 func GetTestFiles(gamePath string, modPaths []string, gameType game.Type) ([]*PdxTestFile, error) {
 	testFiles := make([]*PdxTestFile, 0)
-	ignoreList := getIgnoreList(gameType)
+	ignoreList := baseIgnoreList[gameType]
 
 	// Add base game tests
 	baseGameTests, err := parseTestDirectory(filepath.Join(gamePath, "tools", "scripted_tests"), ignoreList)
@@ -100,12 +107,14 @@ func parseTestFile(file string) (*PdxTestFile, error) {
 	matches := regexTest.FindAllStringSubmatch(string(content), -1)
 	tests := make([]*PdxTest, len(matches))
 
-	lastDate := regexLastDate.FindString(string(content))
+	lastDate := regexLastDate.FindStringSubmatch(string(content))
+	displayName := regexTestDisplayName.FindStringSubmatch(string(content))
 
 	for i, match := range matches {
 		tests[i] = &PdxTest{
-			Name:    match[2],
-			Comment: match[1],
+			Name:        match[3],
+			DisplayName: match[1],
+			Description: match[2],
 		}
 	}
 
@@ -114,22 +123,19 @@ func parseTestFile(file string) (*PdxTestFile, error) {
 	}
 
 	testFile := &PdxTestFile{
-		Ignored:  strings.Contains(file, ignoreSuffix),
-		Name:     filepath.Base(file),
-		Path:     file,
-		LastDate: lastDate,
-		Tests:    tests,
+		Ignored: strings.Contains(file, ignoreSuffix),
+		Name:    filepath.Base(file),
+		Path:    file,
+		Tests:   tests,
 	}
-	return testFile, nil
-}
+	if lastDate != nil {
+		testFile.LastDate = lastDate[1]
+	}
+	if displayName != nil {
+		testFile.DisplayName = displayName[1]
+	}
 
-func getIgnoreList(gameType game.Type) []string {
-	switch gameType {
-	case game.Victoria3:
-		return victoria3IgnoreList
-	default:
-		return make([]string, 0)
-	}
+	return testFile, nil
 }
 
 func mergeTestFiles(existingTests []*PdxTestFile, newTests []*PdxTestFile) []*PdxTestFile {
