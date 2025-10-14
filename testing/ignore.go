@@ -46,7 +46,7 @@ func deactivateTestFile(file *PdxTestFile) error {
 		deactivatedName := file.Path + ignoreSuffix
 		err := os.Rename(file.Path, deactivatedName)
 		if err != nil {
-			return fmt.Errorf("could not deactivate test file (%s): %v", file, err)
+			return fmt.Errorf("could not deactivate test file (%s): %v", file.Path, err)
 		}
 		file.Path = deactivatedName
 		file.Ignored = true
@@ -59,7 +59,7 @@ func activateTestFile(file *PdxTestFile) error {
 		activatedName, _ := strings.CutSuffix(file.Path, ignoreSuffix)
 		err := os.Rename(file.Path, activatedName)
 		if err != nil {
-			return fmt.Errorf("could not activate test file (%s): %v", file, err)
+			return fmt.Errorf("could not activate test file (%s): %v", file.Path, err)
 		}
 		file.Path = activatedName
 		file.Ignored = false

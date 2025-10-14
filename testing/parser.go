@@ -20,7 +20,9 @@ var baseIgnoreList = map[game.Type][]string{
 	game.Victoria3: {
 		"test.txt",
 	},
-	game.CrusaderKings3: {},
+	game.CrusaderKings3: {
+		// No game specific ignored files
+	},
 }
 
 type PdxTestFile struct {
