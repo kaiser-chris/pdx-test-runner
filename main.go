@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -64,6 +65,17 @@ func main() {
 		logging.Info(buildFoundTestsReport(testFiles, true))
 	}
 	logging.Info(buildFoundTestsReport(testFiles, false))
+
+	startTime := time.Now()
+	logging.Info("Start running tests")
+	err = testing.RunTests(settings)
+	if err != nil {
+		logging.Fatalf("Could not run tests: %s", err)
+		os.Exit(1)
+	}
+	endTime := time.Now()
+	logging.Info("Finished running tests")
+	logging.Infof("Running tests took: %v", endTime.Sub(startTime))
 
 	logging.Info("Reactivating all test files")
 	err = testing.ActivateTestFiles(testFiles)

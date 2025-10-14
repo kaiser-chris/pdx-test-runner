@@ -123,7 +123,7 @@ func parseTestFile(file string) (*PdxTestFile, error) {
 	}
 
 	testFile := &PdxTestFile{
-		Ignored: strings.Contains(file, ignoreSuffix),
+		Ignored: strings.HasSuffix(file, ignoreSuffix),
 		Name:    filepath.Base(file),
 		Path:    file,
 		Tests:   tests,
