@@ -49,7 +49,7 @@ func main() {
 	}
 
 	logging.Info("Reading Tests")
-	testFiles, err := testing.GetTestFiles(settings.ContentPath, testConfig.ModDirectories, game.Victoria3)
+	testFiles, err := testing.GetTestFiles(settings.ContentPath, testConfig.ModDirectories, settings.GameType)
 	if err != nil {
 		logging.Fatalf("Could not parse tests: %s", err)
 		os.Exit(1)
@@ -62,14 +62,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if reportIgnored != nil && *reportIgnored {
-		logging.Info(buildFoundTestsReport(testFiles, true))
-	}
-	logging.Info(buildFoundTestsReport(testFiles, false))
+	logging.Info(buildFoundTestsReport(testFiles, reportIgnored != nil && *reportIgnored))
 
 	startTime := time.Now()
 	logging.Info("Start running tests")
-	err = testing.RunTests(settings)
+	results, err := testing.RunTests(settings, testConfig, testFiles)
 	if err != nil {
 		logging.Fatalf("Could not run tests: %s", err)
 		os.Exit(1)
@@ -77,6 +74,14 @@ func main() {
 	endTime := time.Now()
 	logging.Info("Finished running tests")
 	logging.Infof("Running tests took: %v", endTime.Sub(startTime))
+
+	absoluteOutputPath, err := filepath.Abs(results.OutputDirectory)
+	if err != nil {
+		logging.Infof("Test output: %s", results.OutputDirectory)
+	} else {
+		logging.Infof("Test output: %s", absoluteOutputPath)
+	}
+	logging.Info(buildRunTestsReport(results))
 
 	logging.Info("Reactivating all test files")
 	err = testing.ActivateTestFiles(testFiles)
@@ -88,13 +93,6 @@ func main() {
 }
 
 func buildFoundTestsReport(files []*testing.PdxTestFile, ignored bool) string {
-	var color string
-	if ignored {
-		color = logging.AnsiFgLightRed
-	} else {
-		color = logging.AnsiFgBlue
-	}
-
 	countFiles := 0
 	countTests := 0
 	for _, testFile := range files {
@@ -118,26 +116,14 @@ func buildFoundTestsReport(files []*testing.PdxTestFile, ignored bool) string {
 	)
 
 	for _, testFile := range files {
-		if testFile.Ignored == !ignored {
+		if testFile.Ignored && !ignored {
 			continue
 		}
-		if strings.TrimSpace(testFile.DisplayName) != "" {
-			report += fmt.Sprintf(
-				"\n%sFile:%s %s%s%s (%s)",
-				logging.AnsiBoldOn, logging.AnsiAllDefault,
-				color,
-				testFile.DisplayName,
-				logging.AnsiAllDefault,
-				testFile.Name,
-			)
+		var color string
+		if testFile.Ignored {
+			color = logging.AnsiFgLightRed
 		} else {
-			report += fmt.Sprintf(
-				"\n%sFile:%s %s%s%s",
-				logging.AnsiBoldOn, logging.AnsiAllDefault,
-				color,
-				testFile.Name,
-				logging.AnsiAllDefault,
-			)
+			color = logging.AnsiFgBlue
 		}
 		for _, test := range testFile.Tests {
 			if strings.TrimSpace(test.DisplayName) != "" {
@@ -159,13 +145,102 @@ func buildFoundTestsReport(files []*testing.PdxTestFile, ignored bool) string {
 				)
 			}
 			if strings.TrimSpace(test.Description) != "" {
-				report += fmt.Sprintf(" :: %s%s%s",
-					logging.AnsiFgGreen,
+				report += fmt.Sprintf(" :: %s",
 					test.Description,
+				)
+			}
+			if strings.TrimSpace(testFile.DisplayName) != "" {
+				report += fmt.Sprintf(
+					" :: %s%s%s (%s)",
+					logging.AnsiBoldOn,
+					testFile.DisplayName,
+					logging.AnsiAllDefault,
+					testFile.Name,
+				)
+			} else {
+				report += fmt.Sprintf(
+					" :: %s%s%s",
+					logging.AnsiBoldOn,
+					testFile.Name,
 					logging.AnsiAllDefault,
 				)
 			}
 		}
 	}
+	return report
+}
+
+func buildRunTestsReport(results *testing.ExecutionResults) string {
+	countSuccesses := 0
+	countFailures := 0
+	for _, testResult := range results.TestResults {
+		if testResult.Success {
+			countSuccesses++
+		} else {
+			countFailures++
+		}
+	}
+	report := fmt.Sprintf(
+		"There were %s%v%s %ssuccessful%s tests and %s%v%s %sfailed%s tests:",
+		logging.AnsiBoldOn, countSuccesses, logging.AnsiAllDefault,
+		logging.AnsiFgGreen, logging.AnsiAllDefault,
+		logging.AnsiBoldOn, countFailures, logging.AnsiAllDefault,
+		logging.AnsiFgLightRed, logging.AnsiAllDefault,
+	)
+	for _, testResult := range results.TestResults {
+		if testResult.Success {
+			report += fmt.Sprintf(
+				"\n - %s%sSuccess:%s ",
+				logging.AnsiBoldOn,
+				logging.AnsiFgGreen,
+				logging.AnsiAllDefault,
+			)
+		} else {
+			report += fmt.Sprintf(
+				"\n - %s%sFailure:%s ",
+				logging.AnsiBoldOn,
+				logging.AnsiFgLightRed,
+				logging.AnsiAllDefault,
+			)
+		}
+		if strings.TrimSpace(testResult.Test.DisplayName) != "" {
+			report += fmt.Sprintf(
+				"%s%s%s (%s)",
+				logging.AnsiFgBlue,
+				testResult.Test.DisplayName,
+				logging.AnsiAllDefault,
+				testResult.Test.Name,
+			)
+		} else {
+			report += fmt.Sprintf(
+				"%s%s%s",
+				logging.AnsiFgBlue,
+				testResult.Test.Name,
+				logging.AnsiAllDefault,
+			)
+		}
+		if strings.TrimSpace(testResult.Test.Description) != "" {
+			report += fmt.Sprintf(" :: %s",
+				testResult.Test.Description,
+			)
+		}
+		if strings.TrimSpace(testResult.TestFile.DisplayName) != "" {
+			report += fmt.Sprintf(
+				" :: %s%s%s (%s)",
+				logging.AnsiBoldOn,
+				testResult.TestFile.DisplayName,
+				logging.AnsiAllDefault,
+				testResult.TestFile.Name,
+			)
+		} else {
+			report += fmt.Sprintf(
+				" :: %s%s%s",
+				logging.AnsiBoldOn,
+				testResult.TestFile.Name,
+				logging.AnsiAllDefault,
+			)
+		}
+	}
+
 	return report
 }

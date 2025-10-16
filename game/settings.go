@@ -15,7 +15,7 @@ const ( // iota is reset to 0
 )
 
 type LauncherSettings struct {
-	Type        Type
+	GameType    Type
 	GameId      string `json:"gameId"`
 	DataPath    string `json:"gameDataPath"`
 	ExecPath    string `json:"exePath"`
@@ -43,11 +43,11 @@ func GetLauncherSettings(basePath string) (*LauncherSettings, error) {
 
 	switch launcherSettings.GameId {
 	case "victoria3":
-		launcherSettings.Type = Victoria3
+		launcherSettings.GameType = Victoria3
 		launcherSettings.ContentPath = filepath.Join(launcherDirectory, launcherSettings.ContentPath)
 		launcherSettings.ExecPath = filepath.Join(launcherDirectory, launcherSettings.ExecPath)
 	case "ck3":
-		launcherSettings.Type = CrusaderKings3
+		launcherSettings.GameType = CrusaderKings3
 		launcherSettings.DataPath = filepath.Clean(launcherSettings.DataPath)
 		launcherSettings.ContentPath = filepath.Join(launcherDirectory, launcherSettings.ContentPath)
 		launcherSettings.ExecPath = filepath.Join(launcherDirectory, launcherSettings.ExecPath)

@@ -3,6 +3,7 @@
   "mod-directories": [
     "D:\\Development\\projects\\victoria3\\gate\\mod"
   ],
+  "output-directory": "output",
   "ignored-files": [
     "germany.txt",
     "ip3.txt",

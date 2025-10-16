@@ -31,5 +31,4 @@ go.work
 /.run/
 
 # Application specific
-### Ignore Database
-*.sqlite
+/output
