@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bahmut.de/pdx-test-runner/config"
-	"bahmut.de/pdx-test-runner/game"
-	"bahmut.de/pdx-test-runner/logging"
-	"bahmut.de/pdx-test-runner/testing"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"bahmut.de/pdx-test-runner/config"
+	"bahmut.de/pdx-test-runner/game"
+	"bahmut.de/pdx-test-runner/logging"
+	"bahmut.de/pdx-test-runner/testing"
 )
 
 const (

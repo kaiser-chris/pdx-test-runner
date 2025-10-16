@@ -1,9 +1,10 @@
 package config
 
 import (
-	"bahmut.de/pdx-test-runner/logging"
 	"encoding/json"
 	"os"
+
+	"bahmut.de/pdx-test-runner/logging"
 )
 
 type TestConfig struct {

@@ -2,9 +2,10 @@ package game
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows/registry"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 const userDocumentsVariable = "%USER_DOCUMENTS%"

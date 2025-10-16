@@ -1,13 +1,14 @@
 package testing
 
 import (
-	"bahmut.de/pdx-test-runner/game"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"bahmut.de/pdx-test-runner/game"
 )
 
 func RunTests(settings *game.LauncherSettings) error {

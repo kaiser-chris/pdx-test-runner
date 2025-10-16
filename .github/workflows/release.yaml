@@ -19,9 +19,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - { runner: ubuntu-latest, os: linux,   arch: amd64, env:  CGO_ENABLED=0 }
-          - { runner: ubuntu-latest, os: linux,   arch: arm64, env:  CGO_ENABLED=0 }
-          - { runner: ubuntu-latest, os: windows, arch: amd64, env:  CGO_ENABLED=0 }
+          - { runner: ubuntu-latest, os: linux,   arch: amd64, env: CGO_ENABLED=0 }
+          - { runner: ubuntu-latest, os: linux,   arch: arm64, env: CGO_ENABLED=0 }
+          - { runner: ubuntu-latest, os: windows, arch: amd64, env: CGO_ENABLED=0 }
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -114,7 +114,7 @@ jobs:
           draft: false
           prerelease: false
           files: "*64.zip"
-          tag_name	: ${{ steps.increment-version.outputs.next-version }}
+          tag_name: ${{ steps.increment-version.outputs.next-version }}
           name: ${{ steps.increment-version.outputs.next-version }}
           body: |
             Released a new version of the **pdx-test-runner**.

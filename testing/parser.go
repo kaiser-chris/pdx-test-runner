@@ -1,12 +1,13 @@
 package testing
 
 import (
-	"bahmut.de/pdx-test-runner/game"
-	"bahmut.de/pdx-test-runner/logging"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"bahmut.de/pdx-test-runner/game"
+	"bahmut.de/pdx-test-runner/logging"
 )
 
 const activeTestSuffix = ".txt"
