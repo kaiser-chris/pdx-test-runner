@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bahmut.de/pdx-test-runner/.github/reporting"
 	"bahmut.de/pdx-test-runner/config"
 	"bahmut.de/pdx-test-runner/game"
 	"bahmut.de/pdx-test-runner/logging"
+	"bahmut.de/pdx-test-runner/reporting"
 	"bahmut.de/pdx-test-runner/testing"
 )
 
