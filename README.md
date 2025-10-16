@@ -105,15 +105,15 @@ last_date = "1936.1.1"
 tests = {
     ### name = Name of specific test
     ### desc = Description of specific test
-	some_test = {
+    some_test = {
         acceptable_fail_rate = 0.0
-		success = {
+        success = {
             always = yes
-		}
+        }
 		fail = {
             always = no
-		}
-	}
+        }
+    }
 }
 ```
 

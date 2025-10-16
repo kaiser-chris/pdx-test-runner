@@ -59,7 +59,7 @@ func WriteReport(results *testing.ExecutionResults, testFiles []*testing.PdxTest
 				builder.WriteString(test.DisplayName)
 				builder.WriteString(" (")
 				builder.WriteString(test.Name)
-				builder.WriteString(" )")
+				builder.WriteString(")")
 			} else {
 				builder.WriteString(test.Name)
 			}
@@ -74,7 +74,7 @@ func WriteReport(results *testing.ExecutionResults, testFiles []*testing.PdxTest
 				builder.WriteString(file.DisplayName)
 				builder.WriteString(" (")
 				builder.WriteString(file.Name)
-				builder.WriteString(" )")
+				builder.WriteString(")")
 			} else {
 				builder.WriteString(file.Name)
 			}
