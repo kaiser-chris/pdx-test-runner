@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
+	"bahmut.de/pdx-test-runner/.github/reporting"
 	"bahmut.de/pdx-test-runner/config"
 	"bahmut.de/pdx-test-runner/game"
 	"bahmut.de/pdx-test-runner/logging"
@@ -21,7 +21,7 @@ const (
 
 func main() {
 	configFlag := flag.String(FlagConfig, "test-config.json", "Optional: Path to test config")
-	reportIgnored := flag.Bool(FlagReportIgnored, false, "Optional: Enable to list ignored tests")
+	reportIgnored := flag.Bool(FlagReportIgnored, false, "Optional: Enable to list ignored tests in console")
 	flag.Parse()
 
 	configPath, err := filepath.Abs(*configFlag)
@@ -64,16 +64,14 @@ func main() {
 
 	logging.Info(buildFoundTestsReport(testFiles, reportIgnored != nil && *reportIgnored))
 
-	startTime := time.Now()
 	logging.Info("Start running tests")
 	results, err := testing.RunTests(settings, testConfig, testFiles)
 	if err != nil {
 		logging.Fatalf("Could not run tests: %s", err)
 		os.Exit(1)
 	}
-	endTime := time.Now()
 	logging.Info("Finished running tests")
-	logging.Infof("Running tests took: %v", endTime.Sub(startTime))
+	logging.Infof("Running tests took: %s", results.Duration.String())
 
 	absoluteOutputPath, err := filepath.Abs(results.OutputDirectory)
 	if err != nil {
@@ -82,6 +80,13 @@ func main() {
 		logging.Infof("Test output: %s", absoluteOutputPath)
 	}
 	logging.Info(buildRunTestsReport(results))
+
+	logging.Info("Writing report")
+	err = reporting.WriteReport(results, testFiles, settings)
+	if err != nil {
+		logging.Fatalf("Could not write report: %s", err)
+		os.Exit(1)
+	}
 
 	logging.Info("Reactivating all test files")
 	err = testing.ActivateTestFiles(testFiles)

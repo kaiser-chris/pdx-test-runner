@@ -31,6 +31,9 @@ var saveGameSuffixes = map[game.Type]string{
 type ExecutionResults struct {
 	OutputDirectory string
 	TestResults     []*TestResult
+	StartTime       time.Time
+	EndTime         time.Time
+	Duration        time.Duration
 }
 
 type TestResult struct {
@@ -49,15 +52,21 @@ func RunTests(settings *game.LauncherSettings, config *config.TestRunnerConfig, 
 		return nil, err
 	}
 
+	startTime := time.Now()
 	err = runGame(settings.ExecPath, resultFile)
 	if err != nil {
 		return nil, err
 	}
+	endTime := time.Now()
 
 	results, err := collectTestResults(resultFile, settings, config, testFiles)
 	if err != nil {
 		return nil, err
 	}
+
+	results.StartTime = startTime
+	results.EndTime = endTime
+	results.Duration = endTime.Sub(startTime)
 
 	return results, nil
 }

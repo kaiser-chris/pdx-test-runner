@@ -39,7 +39,7 @@ func LoadConfig(path string) (*TestRunnerConfig, error) {
 
 	// Fill optional output parameter
 	if config.OutputDirectory == "" {
-		config.OutputDirectory = "."
+		config.OutputDirectory = "output"
 	}
 
 	return &config, nil

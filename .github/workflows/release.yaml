@@ -113,7 +113,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: false
-          files: "*64.zip"
+          files: |
+            "*64.zip"
+            "test-config.json"
           tag_name: ${{ steps.increment-version.outputs.next-version }}
           name: ${{ steps.increment-version.outputs.next-version }}
           body: |
